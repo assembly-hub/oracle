@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/assembly-hub/db"
+	"github.com/assembly-hub/impl-db-sql"
 	_ "github.com/mattn/go-oci8"
 )
 
@@ -25,14 +27,14 @@ func NewClient(cfg *Config) *Client {
 	return c
 }
 
-func (c *Client) Connect() (*sql.DB, error) {
-	db, err := sql.Open("oci8", c.cfg.DataSourceName)
+func (c *Client) Connect() (db.Executor, error) {
+	conn, err := sql.Open("oci8", c.cfg.DataSourceName)
 	if err != nil {
 		return nil, err
 	}
-	db.SetConnMaxLifetime(time.Duration(c.cfg.ConnMaxLifeTime) * time.Millisecond)
-	db.SetConnMaxIdleTime(time.Duration(c.cfg.ConnMaxIdleTime) * time.Millisecond)
-	db.SetMaxOpenConns(c.cfg.MaxOpenConn)
-	db.SetMaxIdleConns(c.cfg.MaxIdleConn)
-	return db, err
+	conn.SetConnMaxLifetime(time.Duration(c.cfg.ConnMaxLifeTime) * time.Millisecond)
+	conn.SetConnMaxIdleTime(time.Duration(c.cfg.ConnMaxIdleTime) * time.Millisecond)
+	conn.SetMaxOpenConns(c.cfg.MaxOpenConn)
+	conn.SetMaxIdleConns(c.cfg.MaxIdleConn)
+	return impl.NewDB(conn), err
 }
